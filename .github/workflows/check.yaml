@@ -1,0 +1,18 @@
+name: Check
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+
+jobs:
+  eval:
+    name: Evaluate and check formatting
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v5
+      - uses: cachix/install-nix-action@v31
+      - name: Formatting
+        run: nix fmt -- --ci
+      - name: Evaluate every output
+        run: nix flake check --no-build --all-systems

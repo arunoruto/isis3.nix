@@ -1,0 +1,33 @@
+# A full build compiles ISIS and a few pinned libraries from source; without a
+# binary cache that takes a couple of hours on a hosted runner, so it only runs
+# when packages change or on demand.
+name: Build
+
+on:
+  workflow_dispatch:
+  pull_request:
+    paths:
+      - "flake.lock"
+      - "flake.nix"
+      - "packages/**"
+  push:
+    branches: [main]
+    paths:
+      - "flake.lock"
+      - "flake.nix"
+      - "packages/**"
+
+jobs:
+  build:
+    name: Build ISIS and run the smoke test
+    runs-on: ubuntu-latest
+    timeout-minutes: 360
+    steps:
+      - name: Free disk space
+        uses: jlumbroso/free-disk-space@main
+        with:
+          tool-cache: true
+      - uses: actions/checkout@v5
+      - uses: cachix/install-nix-action@v31
+      - name: Build
+        run: nix build -L .#isis .#checks.x86_64-linux.isis-smoke
